@@ -1,22 +1,49 @@
 //
 //  SceneDelegate.swift
-//  ViintageMoneyXBit
+//  ViintageExchange
 //
-//  Created by LaurenceMBP2 on 2022/9/5.
+//  Created by LaurenceMBP2 on 2022/7/6.
 //
 
 import UIKit
+import SwiftUI
 
-class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+var ENV:APIKEYS {
+    #if DEBUG
+        return DebugENV()
+//        #warning("Mode : debug")
+    #else
+//        #warning("Mode : prod")
+        return ProdENV()
+    #endif
+}
+
+class SceneDelegate: UIResponder, UIWindowSceneDelegate, ObservableObject, UIGestureRecognizerDelegate {
 
     var window: UIWindow?
-
+    @Published var displayMode:UIUserInterfaceStyle?
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        guard let _ = (scene as? UIWindowScene) else { return }
+        
+        guard let windowScene = (scene as? UIWindowScene) else { return }
+        
+        
+        self.window = UIWindow(frame: windowScene.coordinateSpace.bounds)
+        self.window?.windowScene = windowScene
+        if #available(iOS 13.0, *) {
+            self.window?.overrideUserInterfaceStyle = UIUserInterfaceStyle.dark
+        }
+        
+        self.displayMode = .dark
+//        let rootnavi = UINavigationController(rootViewController: LoginVC())
+        let rootnavi = UINavigationController(rootViewController: LaunchViewController())
+//        rootnavi.navigationBar.barStyle = .black
+        rootnavi.navigationBar.isTranslucent = false
+        rootnavi.navigationBar.isHidden = true
+        window?.rootViewController = rootnavi
+        window?.makeKeyAndVisible()
+//        addDismissKeypadTapGesture()
+        
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -45,11 +72,28 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Called as the scene transitions from the foreground to the background.
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
-
-        // Save changes in the application's managed object context when the application transitions to the background.
-        (UIApplication.shared.delegate as? AppDelegate)?.saveContext()
     }
 
-
+    func changeThemeMode() {
+        
+        
+        
+        print("changeThemeMode")
+        if UITraitCollection.current.userInterfaceStyle == .dark {
+//            self.window?.overrideUserInterfaceStyle = .light
+        } else {
+//            self.window?.overrideUserInterfaceStyle = .dark
+        }
+        
+    }
+    
+    func addDismissKeypadTapGesture() {
+        let tapGesture = AnyGestureRecognizer(target: window, action:#selector(UIView.endEditing))
+        tapGesture.requiresExclusiveTouchType = false
+        tapGesture.cancelsTouchesInView = false
+        tapGesture.delegate = self //I don't use window as delegate to minimize possible side effects
+        window?.addGestureRecognizer(tapGesture)
+    }
+    
 }
 
